@@ -36,4 +36,12 @@ SECTIONS
 		_end_bss = .;
 	}> SRAM
 
+	.stack :
+	{
+		KEEP(*(.stack*))
+		*(.stack*)
+	}> SRAM
+	__stack_top = ORIGIN(SRAM) + LENGTH(SRAM);
+	PROVIDE(_stack_top = __stack_top);
+
 }
