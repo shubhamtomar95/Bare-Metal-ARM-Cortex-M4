@@ -5,14 +5,17 @@
 #define SRAM_END ((SRAM_START) + (SRAM_SIZE))
 
 
-#define STACK_SIZE 512
+#define STACK_SIZE 1024
 
 #define STACK_START SRAM_END
-
+extern uint32_t const __stack_top;
+void main(void);
 void ResetIntHandler()
 {
-    extern uint32_t _start_text, _end_text,_start_data, _end_data, _start_bss, _end_bss;
+
+    extern uint32_t _end_text,_start_data, _start_bss, _end_bss;
     uint32_t *src = (uint32_t*)&_end_text, *dst = (uint32_t*)&_start_data;
+
     //copy .data to SRAM
     while(dst < &_end_text) *(dst++) = *(src++);
 
@@ -20,8 +23,6 @@ void ResetIntHandler()
     for (dst = &_start_bss ; dst < &_end_bss; dst++) *dst = 0;
     
     main();
-    //call main()
-    while(1);
 }
 
 void DefaultIntHandler()
@@ -29,12 +30,13 @@ void DefaultIntHandler()
     
 }
 
-static uint32_t stack[STACK_SIZE];
+
 //uint32_t vector[] __attribute__ ((section(".isr_vector"))) = 
 __attribute__ ((section(".isr_vector"))) void (*const vectors[])() =
 {
-    (void (*)())((uint32_t)stack + sizeof(stack)),
-	ResetIntHandler,
+    (void (*)())(&__stack_top),
+    //(void (*)())((uint32_t)stack + sizeof(stack)),
+	ResetIntHandler,//Reset_Handler,
     DefaultIntHandler,                      // The NMI handler
     DefaultIntHandler,                      // The hard fault handler
     DefaultIntHandler,                      // The MPU fault handler
@@ -185,7 +187,7 @@ __attribute__ ((section(".isr_vector"))) void (*const vectors[])() =
     DefaultIntHandler,                      // GPIO Port S
     DefaultIntHandler,                      // PWM 1 Generator 0
     DefaultIntHandler,                      // PWM 1 Generator 1
-    DefaultIntHandler,                      // PWM 1 Generator 2
+    DefaultIntHandler,                      // PWM 1 Generator 2  
     DefaultIntHandler,                      // PWM 1 Generator 3
     DefaultIntHandler                       // PWM 1 Fault
 };

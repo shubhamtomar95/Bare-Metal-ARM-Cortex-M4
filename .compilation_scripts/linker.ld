@@ -38,6 +38,7 @@ SECTIONS
 
 	.stack :
 	{
+		. = ALIGN(4);
 		KEEP(*(.stack*))
 		*(.stack*)
 	}> SRAM
